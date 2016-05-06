@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import pylab as pl
 
 def maketable():
-	table = dict()
+	#mastertable = dict()
 	maturetable = dict()
+	pretable = dict()
 	for i in range (2, 22):	
 		#with open(str(sys.argv[1])) as mfile:
 		with open ("mature_"+str(i)+".fa") as mfile:
@@ -23,7 +24,7 @@ def maketable():
 					
 											
 					mature.append(' '.join(name[1:])[:-1])
-					print mature
+					
 					#mature.append(name[1])
 					maturetable[miname.lower()] = mature 
 				else:
@@ -38,34 +39,116 @@ def maketable():
 					
 					
 				
-	#print maturetable	
+		#print maturetable	
 				
+		
+		
+		with open("hairpin_"+str(i)+".fa") as hfile:
+			pre = []
+			pre2 = []
+			start = True
+			
+			for line in hfile:
+				if line[0] == ">":
+					if not start:						
+						
+						seq = ''.join(pre2)
+						
+						pre.append(seq)
+						#print pre
+						if (prename[0:3] != "cel") and (prename[0:3] != "hsa") and (prename[0:3] != "mmu"):
+							continue
+						
+						pretable[prename.lower()] = pre
+						
+						pre = []
+						pre2 = []				
+					
+					name = line.split(" ")
+				
+					prename = name[0][1:]
+				
+					if (prename[0:3] != "cel") and (prename[0:3] != "hsa") and (prename[0:3] != "mmu"):
+						continue
+				
+					pre.append(' '.join(name[1:])[:-1])
+						#pretable[prename.lower()] = pre
+					start = False
+				else:
+					
+					if (prename[0:3] != "cel") and (prename[0:3] != "hsa") and (prename[0:3] != "mmu"):
+						continue
+					pre2.append(line[:-1])
+					
+		
+		#print pretable		
+		
+		mastertable = dict()
+		line = []
+		for pre in pretable:
+			for mat in maturetable:
+				if pre == mat:
+					line.append(pretable[pre])
+					line.append(maturetable[mat])
+						
+					if mat[:3] == "cel":
+						line.append("C.elegans")
+					else: 
+						if mat[:3] == "mmu":
+							line.append("Mus musculus")
+						else:
+							if mat[:3] == "hsa":
+								line.append("Homo sapiens")
+				
+					mastertable[mat] = line
+					line = []
+					continue
+				
+		print mastertable
+			
+			
+			
+			
+		'''		
 				
 		with open("hairpin_"+str(i)+".fa") as hfile:
 		#with open(str(sys.argv[2])) as hfile:
 			pre = []
+			pre2 = []
+			start = 1
 			for line in hfile:
 								
 				if line[0] == ">":
 					
-					seq = ''.join(pre[1:])
-					pre2 = 
-					
-										
+					if start > 1:
+						
+						seq = ''.join(pre[1:])
+						pre2.append(pre[0])
+						pre2.append(seq)
+						
+						if miname in maturetable:
+							pre2 += maturetable[miname]
+							
+						pre2.append(i-1)	
+						print pre2					
+						table[miname] = pre2
+						pre2 = []
+												
+											
 					name = line.split(" ")
 					
 					miname = name[0][1:]
 					
 					if (miname[0:3] != "cel") and (miname[0:3] != "hsa") and (miname[0:3] != "mmu"):
 						continue
-					
-										
-					if miname in table: 
-						continue
+															
+					#if miname in table: 
+					#	continue
 						
-					else:
-						pre.append(' '.join(name[1:])[:-1])
+					#else:
+					pre.append(' '.join(name[1:])[:-1])
 					
+					start += 1
 					
 					#mature.append(name[1])
 						#table[miname] = pre 
@@ -80,24 +163,18 @@ def maketable():
 					
 					pre.append(line[:-1])
 					
-					if miname in maturetable:
-						pre += maturetable[miname]
-						pre.append(i)
-					table[miname] = pre
 					
-					else:
-						pre.append(line[:-1])
+										
+					#else:
+					#	pre.append(line[:-1])
 						
+					'''
 					
-					
-	print table	
-	print len(table)		
+	#print table	
+	#print len(table)		
 
 
 maketable()
-
-
-
 
 
 
@@ -131,20 +208,26 @@ def precursorplot():
 			prenumbersmmu.append(countermmu)
 
 
-	plt.bar(versionlist, prenumberscel, color = "r")	
+	plt.bar(versionlist, prenumberscel)	
 	#fig.savefig("precursor_cel.png")
-	plt.title("precursor from cel")
-	plt.show()
+	#plt.title("precursor from cel")
+	plt.xlabel("miRBase version")
+	plt.ylabel("number of precursors")
+	plt.savefig('task3a_cel.png')
 
-	plt.bar(versionlist, prenumbershsa, color = "y")	
+	plt.bar(versionlist, prenumbershsa)	
 	#fig.savefig("precursor_hsa.png")
-	plt.title("precursor from hsa")
-	plt.show()
+	#plt.title("precursor from hsa")
+	plt.xlabel("miRBase version")
+	plt.ylabel("number of precursors")
+	plt.savefig('task3a_hsa.png')
 	
-	plt.bar(versionlist, prenumbersmmu, color = "b")	
+	plt.bar(versionlist, prenumbersmmu)	
 	#fig.savefig("precursor_mmu.png")
-	plt.title("precursor from mmu")
-	plt.show()
+	#plt.title("precursor from mmu")
+	plt.xlabel("miRBase version")
+	plt.ylabel("number of precursors")
+	plt.savefig('task3a_mmu.png')
 
 
 def matureplot():
@@ -167,13 +250,13 @@ def matureplot():
 	#pl.plot(versionlist, matnumbers)
 	pl.bar(versionlist, matnumbers)
 	#fig.savefig("matureplot.png")
-	plt.title("mature miRNA per version")
-	pl.show()
+	#plt.title("mature miRNA per version")
+	plt.xlabel("miRBase version")
+	plt.ylabel("number of mature miRNAs")
+	plt.savefig('task3b.png')
 	
 	
 	
-#precursorplot()
-#matureplot()
 
 
 
@@ -220,13 +303,15 @@ def ratio():
 									continue
 							
 		
-		y1 = float(mcel) / float(hcel)
-		y2 = float(mmmu) / float(hmmu)
-		y3 = float(mhsa) / float(hhsa)
+		y1 = float(hcel) / float(mcel)
+		y2 = float(hmmu) / float(mmmu)
+		y3 = float(hhsa) / float(mhsa)
 		
 		ratiocel.append(y1)
 		ratiommu.append(y2)
 		ratiohsa.append(y3)
+		
+		print ratiocel
 	
 	
 	
@@ -244,8 +329,7 @@ def ratio():
 	
 
 
-#ratio()
-		
+
 				
 		
 def computecontent(string):
@@ -272,18 +356,46 @@ def computecontent(string):
 	u = float(cu) / float(contentsum)
 	
 	print a, c, g, u  
-						
+	#return [ca,cc,cg,cu]					
 
+
+
+def contentsperversion():
+	groups = [[2,8],[8,17],[17,20],[20,22]]
+	ca, cc, cg, cu = 0,0,0,0
+	counter = 0
+	for g in groups:		
+		for i in range(g[0], g[1]):
+			with open ("mature_"+str(i)+".fa") as mfile:
+				for line in mfile:	
+					if line[0] != "<":
+						for c in line:
+							if c == "a":
+								ca += 1
+							else:
+								if c == "c":
+									cc += 1
+								else:
+									if c == "g":
+										cg += 1
+									else: 
+										if c == "u":
+											cu += 1
+	'''
+precursorplot()
+matureplot()
+ratio()
+		
 
 computecontent("acgu")
 
+'''
 
 
 
+precursorplot()
 
-
-
-
+matureplot()
 
 
 
